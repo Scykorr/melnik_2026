@@ -22,7 +22,7 @@ from apps.reports.services import build_report
 from apps.sources.models import Source
 
 USERS = [
-    ("admin", User.Role.ADMIN, "Admin-IAM-2026!", True),
+    ("admin", User.Role.ADMIN, "admin", True),
     ("operator", User.Role.OPERATOR, "Operator-IAM-2026!", False),
     ("analyst", User.Role.ANALYST, "Analyst-IAM-2026!", False),
     ("approver", User.Role.APPROVER, "Approver-IAM-2026!", False),
@@ -85,6 +85,7 @@ def _users() -> dict[str, User]:
         user, _ = User.objects.get_or_create(username=username, defaults={"role": role, "is_staff": staff})
         user.role = role
         user.is_staff = staff
+        user.is_superuser = username == "admin"
         user.email = f"{username}@example.com"
         user.set_password(password)
         user.save()
@@ -101,7 +102,8 @@ class Command(BaseCommand):
     @transaction.atomic
     def handle(self, *args, **options):
         if Region.objects.filter(code="NORTH").exists() and not options["force"]:
-            self.stdout.write("Демоданные уже загружены. Повторите с --force.")
+            _users()
+            self.stdout.write("Демоданные уже загружены. Учётные записи обновлены. Повторите с --force.")
             return
         if options["force"]:
             _wipe()

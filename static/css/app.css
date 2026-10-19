@@ -14,10 +14,17 @@
   --radius: 12px;
   --sidebar: 248px;
 }
+@font-face {
+  font-family: "IAM Sans";
+  src: url("../fonts/DejaVuSans.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
 * { box-sizing: border-box; }
 html, body { margin: 0; min-height: 100%; }
 body {
-  font-family: "Segoe UI", "Inter", "DejaVu Sans", sans-serif;
+  font-family: "IAM Sans", "Segoe UI", sans-serif;
   background: var(--bg);
   color: var(--ink);
   line-height: 1.5;

@@ -342,6 +342,9 @@ def test_seed_demo(db):
     from apps.regions.models import Region
 
     assert User.objects.filter(role=User.Role.AUDITOR).exists()
+    admin = User.objects.get(username="admin")
+    assert admin.check_password("admin")
+    assert admin.is_staff and admin.is_superuser
     assert Region.objects.count() == 3
     call_command("seed_demo")
     assert Event.objects.count() == 20

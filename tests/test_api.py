@@ -1,4 +1,5 @@
 import json
+import re
 
 import pytest
 from django.utils import timezone
@@ -119,3 +120,14 @@ def test_health_and_ui_flow(world, client):
     assert denied.status_code == 403
     assert client.get("/health/live").status_code == 200
     assert client.get("/health/ready").status_code == 200
+
+
+def test_pages_load_assets_locally(client):
+    for path in ("/accounts/login/", "/admin/login/"):
+        html = client.get(path).content.decode()
+        assert "cdn." not in html
+        assert "googleapis" not in html
+        assert "jsdelivr" not in html
+        assert "unpkg" not in html
+        for asset in re.findall(r'(?:src|href)="([^"]+)"', html):
+            assert not asset.startswith(("http://", "https://", "//"))

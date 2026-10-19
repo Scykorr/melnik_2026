@@ -8,7 +8,7 @@
 
 Локальное окружение этого репозитория: Python 3.14.7 и Django 5.2.18. Образ Docker и проверка GitHub Actions используют Python 3.13, ту же ветку Django 5.2 LTS. PostgreSQL 17 и Redis 7 поднимаются через Compose. Для запуска без Docker по умолчанию используется SQLite, а задачи Celery выполняются сразу в процессе.
 
-Зафиксированные версии лежат в `requirements/base.txt` и `requirements/dev.txt`. На машине разработки нет Node.js, поэтому стили собраны локальным файлом `static/css/app.css` и не загружаются с CDN. Токены интерфейса: фон slate, акцент глубокий синий, радиус 12 px, шрифт системного стека.
+Зафиксированные версии лежат в `requirements/base.txt` и `requirements/dev.txt`. На машине разработки нет Node.js, поэтому стили собраны локальным файлом `static/css/app.css`. Скрипты HTMX, Alpine.js и ECharts лежат в `static/vendor/`, шрифт интерфейса — в `static/fonts/DejaVuSans.ttf`. Страницы не обращаются к CDN. Файлы Django admin отдаёт само приложение из установленного пакета. Токены интерфейса: фон slate, акцент глубокий синий, радиус 12 px.
 
 ## Запуск без Docker
 
@@ -65,7 +65,7 @@ docker compose exec web python manage.py seed_demo
 
 | Логин | Пароль | Роль |
 | --- | --- | --- |
-| admin | Admin-IAM-2026! | администратор |
+| admin | admin | администратор, в том числе Django admin `/admin/` |
 | operator | Operator-IAM-2026! | оператор |
 | analyst | Analyst-IAM-2026! | аналитик |
 | approver | Approver-IAM-2026! | согласующий |
