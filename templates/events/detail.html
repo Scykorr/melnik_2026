@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}{{ event.title }}{% endblock %}
+{% block content %}
+<article class="card">
+  <p class="status status-{{ event.status }}"><span aria-hidden="true">●</span> {{ event.get_status_display }}</p>
+  <h1>{{ event.title }}</h1>
+  <p>{{ event.summary }}</p>
+  <p class="muted">{{ event.region.name }} · {{ event.topic.name }} · {{ event.occurred_at }} · уверенность {{ event.confidence }}</p>
+  <p>{{ event.grouping_explanation }}</p>
+  {% if event.status == 'confirmed' %}
+  <p>Вклад в ИПА на сегодня: <b>{{ contribution }}</b>. Формула {{ formula_version }}. В индекс входят только подтверждённые события.</p>
+  {% else %}
+  <p>Событие не входит в ИПА, пока аналитик его не подтвердит.</p>
+  {% endif %}
+</article>
+<section class="grid grid-2">
+  <article class="card">
+    <h2>Публикации</h2>
+    <ul>
+      {% for link in event.links.all %}
+      <li>
+        <b>{% if link.is_primary %}Первоисточник{% else %}Перепечатка{% endif %}</b>
+        {{ link.document.title }} — {{ link.document.source.name }}
+        <a href="{{ link.document.canonical_url }}">{{ link.document.canonical_url }}</a>
+      </li>
+      {% endfor %}
+    </ul>
+    {% if event.links.all|length > 1 %}
+    <form method="get" action="{% url 'event-compare' event.pk %}">
+      <label>Слева<select name="left">{% for link in event.links.all %}<option value="{{ link.document_id }}">{{ link.document.title }}</option>{% endfor %}</select></label>
+      <label>Справа<select name="right">{% for link in event.links.all %}<option value="{{ link.document_id }}">{{ link.document.title }}</option>{% endfor %}</select></label>
+      <button class="btn btn-ghost" type="submit">Сравнить две публикации</button>
+    </form>
+    {% endif %}
+  </article>
+  <article class="card">
+    <h2>Оценки и объяснение</h2>
+    {% for item in event.assessments.all %}
+    <p><b>{{ item.label }}</b> {{ item.score }} · {{ item.model_name }} {{ item.model_version }}</p>
+    <p class="muted">{{ item.explanation_json.basis }}</p>
+    {% empty %}<p class="empty">Автоматической оценки нет</p>{% endfor %}
+    <h3>Похожие, но отдельные события</h3>
+    <ul>{% for item in similar %}<li><a href="{% url 'event-detail' item.pk %}">{{ item.title }}</a> — не склеено только по общей теме</li>{% empty %}<li class="empty">Близких событий нет</li>{% endfor %}</ul>
+  </article>
+</section>
+<section class="card">
+  <h2>История решений</h2>
+  <ol>{% for item in event.decisions.all %}<li>{{ item.created_at }} · {{ item.from_status }} → {{ item.to_status }} · {{ item.comment }}</li>{% empty %}<li>Решений ещё не было</li>{% endfor %}</ol>
+  {% if request.user.role == 'analyst' or request.user.role == 'admin' %}
+  <form method="post" action="{% url 'event-transition' event.pk %}">
+    {% csrf_token %}
+    <label>Решение
+      <select name="status">
+        <option value="in_review">Взять в проверку</option>
+        <option value="needs_info">Нужны сведения</option>
+        <option value="confirmed">Подтвердить</option>
+        <option value="rejected">Отклонить</option>
+        <option value="archived">В архив</option>
+      </select>
+    </label>
+    <label>Комментарий<textarea name="comment" required minlength="3"></textarea></label>
+    <button class="btn btn-primary" type="submit">Записать решение</button>
+  </form>
+  {% endif %}
+</section>
+{% endblock %}

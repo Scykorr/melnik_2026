@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Источники{% endblock %}
+{% block content %}
+<section class="card">
+  <h1>Источники и здоровье сбора</h1>
+  {% if request.user.role == 'operator' or request.user.role == 'admin' %}
+  <p><a class="btn btn-primary" href="{% url 'source-create' %}">Добавить источник</a></p>
+  {% endif %}
+  <div class="grid grid-2">
+    {% for row in rows %}
+    <article class="card">
+      <h2>{{ row.source.name }}</h2>
+      <p class="status"><span aria-hidden="true">●</span> {{ row.source.get_source_type_display }} · {% if row.source.is_active %}активен{% else %}выключен{% endif %}</p>
+      <p>Последний успех: {{ row.source.last_success_at|default:"ещё не было" }}</p>
+      <p>Очередь: {{ row.queue_status }}</p>
+      <p>Пропущенных интервалов: {{ row.missed_intervals }}</p>
+      <p>Документов: {{ row.documents }}. За неделю: {{ row.week }} (ранее {{ row.previous_week }}). {% if row.coverage_drop %}Охват снизился.{% endif %}</p>
+      <p>Без даты: {{ row.without_date }}</p>
+      {% if row.last_error %}<p class="check-bad">Ошибка: {{ row.last_error }}</p>{% else %}<p class="check-ok">Технической ошибки нет</p>{% endif %}
+      {% if request.user.role == 'operator' or request.user.role == 'admin' %}
+      <form method="post" action="{% url 'source-poll' row.source.pk %}">{% csrf_token %}<button class="btn btn-ghost" type="submit">Повторить безопасно</button></form>
+      {% endif %}
+    </article>
+    {% empty %}<p class="empty">Источников нет</p>{% endfor %}
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}{{ report.title }}{% endblock %}
+{% block content %}
+<div class="split">
+  <nav class="card" aria-label="Структура документа">
+    <a href="#summary">Резюме</a><br>
+    <a href="#topics">Темы</a><br>
+    <a href="#dynamics">Динамика</a><br>
+    <a href="#facts">Факты</a><br>
+    <a href="#limits">Ограничения</a>
+  </nav>
+  <section class="card">
+    <h1>{{ report.title }}</h1>
+    <p class="muted">{{ report.region.name }} · v{{ report.version }} · {{ report.get_status_display }} · методика {{ report.method_version }}</p>
+    <p>Полное название: {{ report.body_json.project_title }}</p>
+    <div class="auto-block" id="summary">
+      <h2>Сформировано автоматически</h2>
+      <p>{{ report.body_json.auto_text.summary }}</p>
+      <p id="topics">{{ report.body_json.auto_text.topics }}</p>
+      <p id="dynamics">{{ report.body_json.auto_text.dynamics }}</p>
+      <p id="limits">{{ report.body_json.auto_text.limitations }}</p>
+    </div>
+    <div class="approved-block">
+      <h2>Текст аналитика</h2>
+      {% if frozen %}
+      <p>{{ report.executive_summary }}</p>
+      <p>{{ report.body_json.approved_text.summary }}</p>
+      <p class="muted">Утверждённая версия не изменяется.</p>
+      {% else %}
+      <form method="post">{% csrf_token %}{{ form.as_p }}<button class="btn btn-primary" type="submit">Сохранить черновик</button></form>
+      {% endif %}
+    </div>
+    <h2 id="facts">Подтверждённые факты</h2>
+    <ul>
+      {% for fact in report.body_json.facts %}
+      <li>{{ fact.title }} ({{ fact.topic }})
+        <ul>{% for source in fact.sources %}<li>{{ source.name }} — {{ source.url }}</li>{% empty %}<li>нет ссылки</li>{% endfor %}</ul>
+      </li>
+      {% empty %}<li class="empty">Подтверждённых фактов нет</li>{% endfor %}
+    </ul>
+    <p>KPI трудозатрат: {{ report.body_json.kpi.k_t }}</p>
+    <p>
+      <a class="btn btn-ghost" href="{% url 'report-export' report.pk 'docx' %}">DOCX</a>
+      <a class="btn btn-ghost" href="{% url 'report-export' report.pk 'pdf' %}">PDF</a>
+    </p>
+    {% if not frozen %}
+      {% if request.user.role == 'analyst' or request.user.role == 'admin' %}
+      <form method="post" action="{% url 'report-submit' report.pk %}">{% csrf_token %}<button class="btn btn-ghost" type="submit">На согласование</button></form>
+      {% endif %}
+      {% if request.user.role == 'approver' or request.user.role == 'admin' %}
+      <form method="post" action="{% url 'report-approve' report.pk %}">{% csrf_token %}<button class="btn btn-primary" type="submit">Утвердить неизменяемую версию</button></form>
+      {% endif %}
+    {% endif %}
+  </section>
+  <aside class="card">
+    <h2>Полнота</h2>
+    {% if issues %}
+      {% for issue in issues %}<p class="check-bad">✗ {{ issue }}</p>{% endfor %}
+    {% else %}
+      <p class="check-ok">✓ Есть факты, ссылки и раздел ограничений</p>
+    {% endif %}
+    <p class="muted">Хеш входов {{ report.input_hash }}</p>
+  </aside>
+</div>
+{% endblock %}

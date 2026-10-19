@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Очередь проверки{% endblock %}
+{% block content %}
+<section class="card">
+  <h1>Очередь проверки</h1>
+  <form class="filters" method="get">
+    <label>Территория<select name="region"><option value="">все</option>{% for region in nav_regions %}<option value="{{ region.code }}" {% if filters.region == region.code %}selected{% endif %}>{{ region.name }}</option>{% endfor %}</select></label>
+    <label>Статус<select name="status"><option value="">все</option>{% for value, label in statuses %}<option value="{{ value }}" {% if filters.status == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+    <label>Тема<select name="topic"><option value="">все</option>{% for topic in topics %}<option value="{{ topic.code }}" {% if filters.topic == topic.code %}selected{% endif %}>{{ topic.name }}</option>{% endfor %}</select></label>
+    <label>Уверенность от<input name="confidence_min" value="{{ request.GET.confidence_min }}" inputmode="decimal"></label>
+    <label>Поиск<input name="q" value="{{ filters.q }}"></label>
+    <button class="btn btn-primary" type="submit">Фильтровать</button>
+  </form>
+  <form method="post" action="{% url 'save-filter' %}?{{ request.GET.urlencode }}">{% csrf_token %}
+    <label>Имя фильтра<input name="filter_name" maxlength="40"></label>
+    <button class="btn btn-ghost" type="submit">Сохранить фильтр</button>
+  </form>
+  {% if saved_filters %}<p>{% for item in saved_filters %}<a href="{% url 'queue' %}?{{ item.query }}">{{ item.name }}</a> {% endfor %}</p>{% endif %}
+  <div id="queue-results">{% include "events/_table.html" %}</div>
+</section>
+{% endblock %}

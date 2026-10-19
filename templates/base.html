@@ -1,0 +1,66 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}ИАМ «Регион»{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+  <script src="{% static 'vendor/htmx.min.js' %}" defer></script>
+  <script src="{% static 'vendor/alpine.min.js' %}" defer></script>
+  <script src="{% static 'vendor/echarts.min.js' %}" defer></script>
+  <script src="{% static 'js/app.js' %}" defer></script>
+</head>
+<body x-data="{ nav: false, userOpen: false }" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+  <a class="skip" href="#main">К содержанию</a>
+  <div class="shell">
+    <aside class="sidebar" :class="{ 'is-open': nav }">
+      <p class="brand">ИАМ «Регион»<small>Мониторинг протестной активности на уровне событий и территорий</small></p>
+      {% if user.is_authenticated %}
+      <nav aria-label="Разделы">
+        <a href="{% url 'dashboard' %}">Сводка</a>
+        <a href="{% url 'queue' %}">Очередь проверки</a>
+        <a href="{% url 'reports' %}">Конструктор ИАМ</a>
+        <a href="{% url 'sources' %}">Источники</a>
+        <a href="{% url 'manual-url' %}">Ручная ссылка</a>
+        <a href="{% url 'import-file' %}">Импорт JSON/CSV</a>
+        <a href="{% url 'experiments' %}">Испытания</a>
+        {% if user.role == 'auditor' or user.role == 'admin' %}<a href="{% url 'audit' %}">Журнал</a>{% endif %}
+        {% if user.role == 'admin' %}<a href="{% url 'users' %}">Пользователи</a>{% endif %}
+      </nav>
+      {% endif %}
+    </aside>
+    <div class="workspace">
+      <header class="topbar">
+        <button class="menu-btn" type="button" @click="nav = !nav" aria-label="Открыть меню">Меню</button>
+        {% if user.is_authenticated %}
+        <form class="filters" method="get" action="{% url 'dashboard' %}" hx-get="{% url 'dashboard' %}" hx-target="#dashboard-body" hx-select="#dashboard-body" hx-indicator="#dash-skeleton" hx-push-url="true">
+          <label>Территория
+            <select name="region">
+              {% for region in nav_regions %}
+              <option value="{{ region.code }}" {% if scope.region and scope.region.code == region.code %}selected{% endif %}>{{ region.name }}</option>
+              {% endfor %}
+            </select>
+          </label>
+          <label>С<input type="date" name="date_from" value="{{ scope.start|date:'Y-m-d' }}"></label>
+          <label>По<input type="date" name="date_to" value="{{ scope.end|date:'Y-m-d' }}"></label>
+          <label>Поиск<input type="search" name="q" value="{{ scope.q }}" placeholder="Событие"></label>
+          <button class="btn btn-primary" type="submit">Показать</button>
+        </form>
+        <div class="user-menu" @click.outside="userOpen = false">
+          <button class="btn btn-ghost" type="button" @click="userOpen = !userOpen">{{ user.username }} · {{ user.get_role_display }}</button>
+          <div x-show="userOpen" x-cloak>
+            <form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="btn btn-ghost" type="submit">Выйти</button></form>
+          </div>
+        </div>
+        {% endif %}
+      </header>
+      <main id="main" class="content">
+        {% if messages %}<ul class="messages">{% for message in messages %}<li>{{ message }}</li>{% endfor %}</ul>{% endif %}
+        <p class="banner">Демонстрационные материалы синтетические. Система не идентифицирует людей и не строит политические профили. Трудозатраты T0/T1: не измерено.</p>
+        {% block content %}{% endblock %}
+      </main>
+    </div>
+  </div>
+</body>
+</html>

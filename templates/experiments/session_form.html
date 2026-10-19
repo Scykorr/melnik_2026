@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card">
+  <h1>Сессия эксперимента</h1>
+  <p class="muted">Код аналитика анонимный. Незавершённая сессия не считается выпуском ИАМ. Ожидание фоновых задач не входит в активное время.</p>
+  <form method="post">{% csrf_token %}{{ form.as_p }}<button class="btn btn-primary" type="submit">Сохранить</button></form>
+</section>
+{% endblock %}

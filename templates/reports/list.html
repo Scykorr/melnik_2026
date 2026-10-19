@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}ИАМ{% endblock %}
+{% block content %}
+<section class="card">
+  <h1>Проекты ИАМ «Регион»</h1>
+  {% if request.user.role == 'analyst' or request.user.role == 'admin' %}
+  <p><a class="btn btn-primary" href="{% url 'report-create' %}">Новый проект</a></p>
+  {% endif %}
+  <table class="table">
+    <thead><tr><th>Название</th><th>Территория</th><th>Период</th><th>Версия</th><th>Статус</th></tr></thead>
+    <tbody>
+      {% for report in reports %}
+      <tr>
+        <td><a href="{% url 'report-detail' report.pk %}">{{ report.title }}</a></td>
+        <td>{{ report.region.name }}</td>
+        <td>{{ report.period_start }} — {{ report.period_end }}</td>
+        <td>{{ report.version }}</td>
+        <td><span class="status status-{{ report.status }}"><span aria-hidden="true">●</span> {{ report.get_status_display }}</span></td>
+      </tr>
+      {% empty %}<tr><td colspan="5" class="empty">Проектов пока нет</td></tr>{% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endblock %}

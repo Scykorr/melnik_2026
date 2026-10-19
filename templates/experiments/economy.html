@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card" style="max-width: 720px">
+  <h1>Экономический прогноз</h1>
+  <p class="banner">Это явно помеченный прогноз, а не фактический результат проекта. Формула E = (T0 − T1) × N × C − C_op.</p>
+  <form method="post">{% csrf_token %}{{ form.as_p }}<button class="btn btn-primary" type="submit">Рассчитать прогноз</button></form>
+  {% if result %}
+  <h2>{{ form.cleaned_data.scenario }}</h2>
+  <p>Эффект: {{ result.effect }} руб./год. Окупаемость: {{ result.payback }}. {{ result.label }}.</p>
+  {% endif %}
+</section>
+{% endblock %}

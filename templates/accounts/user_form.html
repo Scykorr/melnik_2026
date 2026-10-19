@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card" style="max-width: 520px">
+  <h1>Новая учётная запись</h1>
+  <form method="post">{% csrf_token %}{{ form.as_p }}<button class="btn btn-primary" type="submit">Создать</button></form>
+</section>
+{% endblock %}

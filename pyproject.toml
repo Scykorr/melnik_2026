@@ -1,0 +1,29 @@
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings.test"
+pythonpath = ["."]
+addopts = "--cov=apps --cov-report=term-missing"
+
+[tool.coverage.run]
+omit = ["*/migrations/*", "*/management/commands/*", "*/tests/*"]
+
+[tool.ruff]
+line-length = 110
+target-version = "py311"
+extend-exclude = ["migrations", ".venv"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+ignore = ["E501"]
+
+[tool.mypy]
+python_version = "3.13"
+ignore_missing_imports = true
+files = [
+  "apps/analytics/formula.py",
+  "apps/documents/classification.py",
+  "apps/documents/dedup.py",
+  "apps/common/ssrf.py",
+]
+check_untyped_defs = true
+warn_unused_ignores = false
+no_implicit_optional = true

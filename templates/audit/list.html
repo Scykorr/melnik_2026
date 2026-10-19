@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Журнал{% endblock %}
+{% block content %}
+<section class="card">
+  <h1>Журнал действий</h1>
+  <p class="muted">В журнале нет полного текста публикаций и лишних персональных данных. IP хранится только как хеш.</p>
+  <table class="table">
+    <thead><tr><th>Когда</th><th>Кто</th><th>Действие</th><th>Объект</th><th>Основание</th></tr></thead>
+    <tbody>
+      {% for item in page %}
+      <tr>
+        <td>{{ item.created_at }}</td>
+        <td>{{ item.actor|default:"система" }}</td>
+        <td>{{ item.action }}</td>
+        <td>{{ item.object_type }}:{{ item.object_id }}</td>
+        <td>{{ item.reason|default:"—" }}</td>
+      </tr>
+      {% empty %}<tr><td colspan="5" class="empty">Записей нет</td></tr>{% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endblock %}

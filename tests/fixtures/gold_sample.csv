@@ -1,0 +1,5 @@
+document_uid,relevance,topic_code,region_code,event_group_id,rules_version,split,status,text,published_on,dataset_kind
+d1,relevant,housing,NORTH,g1,topic-rules-1.0.0,test,active,Жители провели собрание и выдвинули коллективное требование отремонтировать теплосети на улице Примерной,2026-01-01,synthetic
+d2,relevant,housing,NORTH,g1,topic-rules-1.0.0,test,active,Перепечатка: собрание жителей и коллективное требование отремонтировать теплосети на улице Примерной,2026-01-01,synthetic
+d3,relevant,labor,NORTH,g2,topic-rules-1.0.0,test,active,Жители провели собрание и выдвинули коллективное требование о задержке зарплаты,2026-02-01,synthetic
+d4,irrelevant,other,NORTH,g3,topic-rules-1.0.0,test,active,Комментарий: один житель жалуется на бытовую жалобу,2026-02-02,synthetic

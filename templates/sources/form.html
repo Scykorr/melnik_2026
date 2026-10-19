@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card" style="max-width: 720px">
+  <h1>Карточка источника</h1>
+  <p class="muted">Условия использования обязательны. Обход ограничений сайта не выполняется.</p>
+  <form method="post">{% csrf_token %}{{ form.as_p }}<button class="btn btn-primary" type="submit">Сохранить</button></form>
+</section>
+{% endblock %}

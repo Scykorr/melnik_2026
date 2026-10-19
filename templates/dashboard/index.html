@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Сводка{% endblock %}
+{% block content %}
+<div id="dash-skeleton" class="htmx-indicator grid" aria-hidden="true">
+  <div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>
+</div>
+<div id="dashboard-body" class="grid">
+  {% if empty or not scope.region %}
+  <section class="card empty">
+    <h1>Сводка пока пуста</h1>
+    <p>Выберите территорию или загрузите демонстрационные данные командой <code>python manage.py seed_demo</code>.</p>
+  </section>
+  {% else %}
+  <section class="grid grid-4">
+    <article class="card stat">
+      <span class="muted">Индекс протестной активности</span>
+      <b>{% if index and index.value != None %}{{ index.value }}{% else %}—{% endif %}</b>
+      <span>{% if index and index.status == 'ok' %}рассчитан{% else %}недостаточно данных{% endif %}{% if index and index.delta != None %} · изменение {{ index.delta }}{% endif %}</span>
+    </article>
+    <article class="card stat"><span class="muted">Подтверждённые события</span><b>{{ index.event_count|default:0 }}</b></article>
+    <article class="card stat"><span class="muted">Независимые источники</span><b>{{ index.sources|default:0 }}</b></article>
+    <article class="card stat"><span class="muted">Ручная проверка</span><b>{{ quality.coverage }}</b><span>доля подтверждённых</span></article>
+  </section>
+  <section class="card">
+    <h2>Методика {{ formula.version }}</h2>
+    <p>{{ index.warning|default:"Индекс описывает открытый информационный поток, а не взгляды каждого жителя." }}</p>
+    {% if index and index.low_coverage %}<p class="status status-needs_info"><span aria-hidden="true">!</span> Неполный охват источников</p>{% endif %}
+    <p class="muted">Трудозатраты на выпуск: {{ quality.kpi }}.</p>
+    <form method="get">
+      <input type="hidden" name="region" value="{{ scope.region.code }}">
+      <input type="hidden" name="date_from" value="{{ scope.start|date:'Y-m-d' }}">
+      <input type="hidden" name="date_to" value="{{ scope.end|date:'Y-m-d' }}">
+      <label>Масштаб
+        <select name="scale" onchange="this.form.submit()">
+          <option value="day" {% if scale == 'day' %}selected{% endif %}>Дни</option>
+          <option value="week" {% if scale == 'week' %}selected{% endif %}>Недели</option>
+        </select>
+      </label>
+    </form>
+    {{ timeline|json_script:"timeline-data" }}
+    <div id="timeline-chart" class="chart" role="img" aria-label="Динамика индекса"></div>
+    {% if index.components %}
+    <h3>Вклад событий</h3>
+    <ul>{% for item in index.components %}<li>{{ item.title }} — {{ item.contribution }}</li>{% endfor %}</ul>
+    {% endif %}
+  </section>
+  <section class="grid grid-2">
+    <article class="card">
+      <h2>Темы коллективных требований</h2>
+      {% if topics %}
+      {{ topics|json_script:"topic-data" }}
+      <div id="topic-chart" class="chart" role="img" aria-label="Распределение по темам"></div>
+      {% else %}<p class="empty">Подтверждённых тем за период нет</p>{% endif %}
+    </article>
+    <article class="card">
+      <h2>Качество данных</h2>
+      <ul>
+        <li>Активных источников: {{ quality.sources }}</li>
+        <li>Источников с ошибкой: {{ quality.source_errors }}</li>
+        <li>Документов в карантине: {{ quality.quarantine }}</li>
+        <li>Документов без даты: {{ quality.without_date }}</li>
+      </ul>
+      <h3>Ключевые подтверждённые события</h3>
+      <ul>
+        {% for event in events %}<li><a href="{% url 'event-detail' event.pk %}">{{ event.title }}</a></li>{% empty %}<li class="empty">Нет подтверждённых событий</li>{% endfor %}
+      </ul>
+    </article>
+  </section>
+  {% endif %}
+</div>
+{% endblock %}

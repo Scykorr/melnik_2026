@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Испытания{% endblock %}
+{% block content %}
+<section class="card">
+  <h1>Сравнение трудоёмкости</h1>
+  {% if summary.status == 'не измерено' %}
+  <p class="banner">Фактическое снижение трудоёмкости: <b>не измерено</b>. Завершённых сопоставимых пар AS-IS и TO-BE нет.</p>
+  {% else %}
+  <p>Пар: {{ summary.pairs }}. Медиана K_T: {{ summary.median }}%. Разброс: {{ summary.minimum }}–{{ summary.maximum }}. Экономия, ч: {{ summary.saved_hours }}.</p>
+  {% endif %}
+  <p class="muted">Качество блокирует вывод об ускорении: учитываются полнота, ложные включения, ошибки дат и отсутствие ссылок.</p>
+  <p><a class="btn btn-primary" href="{% url 'session-create' %}">Внести сессию</a> <a class="btn btn-ghost" href="{% url 'economy' %}">Прогноз экономики</a></p>
+  <form method="post">{% csrf_token %}<input type="hidden" name="export" value="csv"><button class="btn btn-ghost" type="submit">Экспорт CSV сессий</button></form>
+</section>
+<section class="card">
+  <h2>Качество классификации и дедупликации</h2>
+  {% if show_factual_metrics %}
+    {% for run in external_runs %}
+    <p>{{ run.method }} / {{ run.split }}: F1 {{ run.f1 }}, precision {{ run.precision }}, recall {{ run.recall }}. Выборка {{ run.sample_size }}.</p>
+    {% endfor %}
+  {% else %}
+  <p class="banner">Фактические F1, Precision и Recall: <b>не измерено</b>. Синтетический прогон не считается результатом проекта.</p>
+  {% endif %}
+  {% for run in runs %}
+  <p class="muted">{{ run.created_at }} · {{ run.dataset }} · {{ run.dataset_kind }} · {{ run.warning }}</p>
+  {% endfor %}
+</section>
+<section class="card">
+  <h2>Последние сессии</h2>
+  <table class="table">
+    <thead><tr><th>Пакет</th><th>Код</th><th>Режим</th><th>Статус</th><th>Активные минуты</th><th>Ожидание фона</th></tr></thead>
+    <tbody>
+      {% for session in sessions %}
+      <tr>
+        <td>{{ session.package.code }}</td><td>{{ session.analyst_code }}</td><td>{{ session.get_mode_display }}</td>
+        <td>{{ session.get_status_display }}</td><td>{{ session.human_active_minutes }}</td><td>{{ session.wait_background_minutes }}</td>
+      </tr>
+      {% empty %}<tr><td colspan="6" class="empty">Сессий нет</td></tr>{% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endblock %}

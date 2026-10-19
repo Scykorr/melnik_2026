@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Сравнение публикаций{% endblock %}
+{% block content %}
+<p><a href="{% url 'event-detail' event.pk %}">К событию</a></p>
+<section class="compare">
+  <article class="card"><h2>{{ left.title }}</h2><p class="muted">{{ left.canonical_url }}</p><p>{{ left.clean_text }}</p></article>
+  <article class="card"><h2>{{ right.title }}</h2><p class="muted">{{ right.canonical_url }}</p><p>{{ right.clean_text }}</p></article>
+</section>
+{% endblock %}

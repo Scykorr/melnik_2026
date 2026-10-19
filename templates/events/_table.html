@@ -1,0 +1,45 @@
+<form method="post" action="{% url 'event-assign' %}">
+  {% csrf_token %}
+  <table class="table">
+    <thead>
+      <tr>
+        <th></th>
+        <th><a href="?ordering=title">Событие</a></th>
+        <th>Территория</th>
+        <th>Тема</th>
+        <th><a href="?ordering=status">Статус</a></th>
+        <th><a href="?ordering=-confidence">Уверенность</a></th>
+        <th>Назначен</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for event in page %}
+      <tr>
+        <td><input type="checkbox" name="event_ids" value="{{ event.pk }}" aria-label="Выбрать {{ event.title }}"></td>
+        <td><a href="{% url 'event-detail' event.pk %}">{{ event.title }}</a></td>
+        <td>{{ event.region.name }}</td>
+        <td>{{ event.topic.name }}</td>
+        <td><span class="status status-{{ event.status }}"><span aria-hidden="true">●</span> {{ event.get_status_display }}</span></td>
+        <td>{{ event.confidence }}</td>
+        <td>{{ event.assigned_to|default:"—" }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="7" class="empty">В очереди ничего нет. Измените фильтр или загрузите данные.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% if request.user.role == 'analyst' or request.user.role == 'admin' %}
+  <label>Назначить аналитика
+    <select name="assignee">{% for person in analysts %}<option value="{{ person.pk }}">{{ person.username }}</option>{% endfor %}</select>
+  </label>
+  <button class="btn btn-ghost" type="submit">Назначить выбранные</button>
+  <p class="muted">Массовое подтверждение намеренно отсутствует: каждую карточку нужно открыть.</p>
+  {% endif %}
+</form>
+{% if page.paginator.num_pages > 1 %}
+<p class="pager">
+  {% if page.has_previous %}<a href="?page={{ page.previous_page_number }}">Назад</a>{% endif %}
+  <span>{{ page.number }} / {{ page.paginator.num_pages }}</span>
+  {% if page.has_next %}<a href="?page={{ page.next_page_number }}">Дальше</a>{% endif %}
+</p>
+{% endif %}

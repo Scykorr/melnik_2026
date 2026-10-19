@@ -1,0 +1,83 @@
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: iam
+      POSTGRES_PASSWORD: iam
+      POSTGRES_DB: iam
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U iam -d iam"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+  redis:
+    image: redis:7
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+  web:
+    build: .
+    env_file: .env
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.local
+      DATABASE_URL: postgres://iam:iam@db:5432/iam
+      REDIS_URL: redis://redis:6379/0
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_TASK_ALWAYS_EAGER: "0"
+      DEBUG: "1"
+      ALLOWED_HOSTS: localhost,127.0.0.1,web
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/live')"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+  worker:
+    build: .
+    command: celery -A config worker --loglevel=info
+    env_file: .env
+    environment:
+      DATABASE_URL: postgres://iam:iam@db:5432/iam
+      REDIS_URL: redis://redis:6379/0
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_TASK_ALWAYS_EAGER: "0"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+  beat:
+    build: .
+    command: celery -A config beat --loglevel=info
+    env_file: .env
+    environment:
+      DATABASE_URL: postgres://iam:iam@db:5432/iam
+      REDIS_URL: redis://redis:6379/0
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_TASK_ALWAYS_EAGER: "0"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+  nginx:
+    image: nginx:1.27
+    profiles: ["production"]
+    volumes:
+      - ./docker/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    ports:
+      - "8080:80"
+    depends_on:
+      - web
+volumes:
+  pgdata:
