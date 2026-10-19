@@ -12,6 +12,8 @@
 
 ## Запуск без Docker
 
+Windows: дважды щёлкните `start.bat` в корне проекта.
+
 Windows PowerShell:
 
 ```powershell
